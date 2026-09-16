@@ -1140,11 +1140,11 @@ async function ambilFoto() {
         .detectAllFaces(
           video,
 
-          new faceapi
-            .TinyFaceDetectorOptions({
-              inputSize: 416,
-              scoreThreshold: 0.5
-            })
+new faceapi
+  .TinyFaceDetectorOptions({
+    inputSize: 512,
+    scoreThreshold: 0.3
+  })
 
         )
 
