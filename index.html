@@ -1,0 +1,1968 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Absensi Karyawan</title>
+
+  <!-- FACE API -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js">
+  </script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #111827;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    video {
+      width: 100%;
+      margin-top: 15px;
+      border-radius: 16px;
+      background: #000;
+      display: block;
+    }
+
+    .info {
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 12px;
+      background: #f3f4f6;
+      line-height: 1.6;
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #f3f4f6;
+      white-space: pre-line;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .success {
+      background: #dcfce7;
+    }
+
+    .error {
+      background: #fee2e2;
+    }
+
+    .warning {
+      background: #fef3c7;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .rekap {
+      margin-top: 20px;
+    }
+
+    .row {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      line-height: 1.5;
+    }
+
+    .logout {
+      background: #6b7280;
+    }
+
+    .camera-box {
+      position: relative;
+    }
+
+    .face-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 55%;
+      height: 65%;
+      transform: translate(-50%, -50%);
+      border: 3px solid rgba(255,255,255,.8);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 10px;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+  <!-- ======================================================
+       LOGIN
+       ====================================================== -->
+
+  <div
+    id="loginCard"
+    class="card"
+  >
+
+    <h2>
+      Absensi Karyawan
+    </h2>
+
+    <input
+      id="idKaryawan"
+      placeholder="ID Karyawan"
+      autocomplete="username"
+    >
+
+    <input
+      id="pin"
+      type="password"
+      placeholder="PIN"
+      autocomplete="current-password"
+    >
+
+    <button
+      id="btnLogin"
+      onclick="login()"
+    >
+      MASUK
+    </button>
+
+    <div
+      id="loginStatus"
+      class="status"
+    ></div>
+
+  </div>
+
+
+  <!-- ======================================================
+       DASHBOARD
+       ====================================================== -->
+
+  <div
+    id="dashboard"
+    class="card hidden"
+  >
+
+    <h2>
+      Absensi
+    </h2>
+
+
+    <div
+      id="employeeInfo"
+      class="info"
+    ></div>
+
+
+    <!-- CAMERA -->
+
+    <div class="camera-box">
+
+      <video
+        id="video"
+        autoplay
+        muted
+        playsinline
+      ></video>
+
+      <div
+        id="faceGuide"
+        class="face-guide"
+      ></div>
+
+    </div>
+
+
+    <div
+      id="cameraStatus"
+      class="status"
+    >
+      Kamera belum aktif.
+    </div>
+
+
+    <button
+      id="btnCamera"
+      onclick="mulaiKamera()"
+    >
+      📷 AKTIFKAN KAMERA
+    </button>
+
+
+    <!-- GPS -->
+
+    <button
+      id="btnGPS"
+      onclick="cekGPS()"
+    >
+      📍 CEK LOKASI
+    </button>
+
+
+    <div
+      id="gpsStatus"
+      class="status"
+    ></div>
+
+
+    <!-- ABSEN -->
+
+    <button
+      id="btnAbsen"
+      disabled
+      onclick="ambilFoto()"
+    >
+      📸 ABSEN SEKARANG
+    </button>
+
+
+    <div
+      id="absenStatus"
+      class="status"
+    ></div>
+
+
+    <!-- REKAP -->
+
+    <div class="rekap">
+
+      <h3>
+        Rekap Hari Ini
+      </h3>
+
+      <div
+        id="rekapHariIni"
+      >
+        Belum ada data.
+      </div>
+
+    </div>
+
+
+    <button
+      class="logout"
+      onclick="logout()"
+    >
+      KELUAR
+    </button>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* ============================================================
+   KONFIGURASI
+   ============================================================ */
+
+/*
+ * MASUKKAN URL WEB APP APPS SCRIPT API DI SINI.
+ *
+ * Contoh:
+ *
+ * const API_URL =
+ * "https://script.google.com/macros/s/XXXXXXXXXXXX/exec";
+ *
+ */
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbynFZbvIKLdeet7OxEgf27_o0_K-lPl-OVVIEPC9UP7Cb0qWZUlXUFdfdRZteJQgAPQ/exec";
+
+
+/*
+ * URL MODEL FACE API
+ */
+
+const MODEL_URL =
+  "https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights";
+
+
+/* ============================================================
+   VARIABLE
+   ============================================================ */
+
+let user = null;
+
+let latitude = null;
+
+let longitude = null;
+
+let cameraStream = null;
+
+let faceModelsReady = false;
+
+
+/* ============================================================
+   API REQUEST
+   ============================================================ */
+
+async function apiRequest(
+  action,
+  data = {}
+) {
+
+  if (
+    !API_URL ||
+    API_URL.includes(
+      "ISI_URL_APPS_SCRIPT"
+    )
+  ) {
+
+    throw new Error(
+      "API_URL belum diisi."
+    );
+  }
+
+
+  const response =
+    await fetch(
+      API_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "text/plain;charset=utf-8"
+        },
+
+        body: JSON.stringify({
+
+          action: action,
+
+          data: data
+
+        })
+      }
+    );
+
+
+  const text =
+    await response.text();
+
+
+  let result;
+
+
+  try {
+
+    result =
+      JSON.parse(text);
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "Response API:",
+      text
+    );
+
+    throw new Error(
+      "Response API bukan JSON."
+    );
+
+  }
+
+
+  if (
+    !result.success
+  ) {
+
+    throw new Error(
+      result.message ||
+      "Terjadi kesalahan pada server."
+    );
+
+  }
+
+
+  return result.data;
+
+}
+
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+async function login() {
+
+  const id =
+    document
+      .getElementById(
+        "idKaryawan"
+      )
+      .value
+      .trim();
+
+
+  const pin =
+    document
+      .getElementById(
+        "pin"
+      )
+      .value
+      .trim();
+
+
+  if (
+    !id ||
+    !pin
+  ) {
+
+    setStatus(
+      "loginStatus",
+      "ID dan PIN wajib diisi.",
+      true
+    );
+
+    return;
+  }
+
+
+  const btn =
+    document
+      .getElementById(
+        "btnLogin"
+      );
+
+
+  btn.disabled =
+    true;
+
+
+  setStatus(
+    "loginStatus",
+    "Memeriksa data..."
+  );
+
+
+  try {
+
+    const result =
+      await apiRequest(
+        "loginKaryawan",
+        {
+          idKaryawan: id,
+          pin: pin
+        }
+      );
+
+
+    user =
+      result;
+
+
+    document
+      .getElementById(
+        "loginCard"
+      )
+      .classList
+      .add("hidden");
+
+
+    document
+      .getElementById(
+        "dashboard"
+      )
+      .classList
+      .remove("hidden");
+
+
+    document
+      .getElementById(
+        "employeeInfo"
+      )
+      .innerHTML =
+
+      "<b>" +
+      escapeHtml(
+        user.nama
+      ) +
+      "</b><br>" +
+
+      "ID: " +
+      escapeHtml(
+        user.idKaryawan
+      ) +
+      "<br>" +
+
+      "Cabang: " +
+      escapeHtml(
+        user.cabang
+      ) +
+      "<br>" +
+
+      escapeHtml(
+        user.jabatan || ""
+      );
+
+
+    /*
+     * JANGAN langsung meminta kamera
+     * pada saat login.
+     *
+     * User menekan tombol kamera.
+     *
+     * Ini lebih aman untuk permission browser.
+     */
+
+
+    loadDashboard();
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "LOGIN ERROR:",
+      error
+    );
+
+
+    setStatus(
+      "loginStatus",
+      "❌ " +
+      error.message,
+      true
+    );
+
+  }
+
+  finally {
+
+    btn.disabled =
+      false;
+
+  }
+
+}
+
+
+/* ============================================================
+   KAMERA
+   ============================================================ */
+
+async function mulaiKamera() {
+
+  const video =
+    document
+      .getElementById(
+        "video"
+      );
+
+
+  const status =
+    document
+      .getElementById(
+        "cameraStatus"
+      );
+
+
+  try {
+
+    /*
+     * Kalau kamera sudah aktif,
+     * jangan buka stream baru.
+     */
+
+    if (
+      cameraStream
+    ) {
+
+      status.textContent =
+        "✓ Kamera sudah aktif.";
+
+      return;
+
+    }
+
+
+    status.className =
+      "status";
+
+
+    status.textContent =
+      "Meminta izin kamera...";
+
+
+    /*
+     * CEK BROWSER
+     */
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+
+      throw new Error(
+        "Browser tidak mendukung akses kamera."
+      );
+
+    }
+
+
+    console.log(
+      "Protocol:",
+      location.protocol
+    );
+
+
+    console.log(
+      "Camera API:",
+      navigator.mediaDevices
+        .getUserMedia
+    );
+
+
+    /*
+     * REQUEST CAMERA
+     *
+     * Sengaja sederhana.
+     */
+
+    cameraStream =
+      await navigator
+        .mediaDevices
+        .getUserMedia({
+
+          video: true,
+
+          audio: false
+
+        });
+
+
+    console.log(
+      "Camera stream:",
+      cameraStream
+    );
+
+
+    video.srcObject =
+      cameraStream;
+
+
+    await video.play();
+
+
+    status.className =
+      "status success";
+
+
+    status.textContent =
+      "✓ Kamera aktif.\n" +
+      "Pastikan hanya satu wajah terlihat.";
+
+
+    document
+      .getElementById(
+        "btnCamera"
+      )
+      .textContent =
+      "✓ KAMERA AKTIF";
+
+
+    document
+      .getElementById(
+        "btnCamera"
+      )
+      .disabled =
+      true;
+
+
+    /*
+     * LOAD FACE MODEL
+     */
+
+    await loadFaceModels();
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "CAMERA ERROR:",
+      error
+    );
+
+
+    cameraStream =
+      null;
+
+
+    let message =
+
+      "❌ KAMERA GAGAL\n\n" +
+
+      "Name: " +
+      error.name +
+      "\n" +
+
+      "Message: " +
+      error.message;
+
+
+    if (
+      error.name ===
+      "NotAllowedError"
+    ) {
+
+      message +=
+
+        "\n\nAkses kamera ditolak." +
+
+        "\nPastikan izin kamera browser aktif.";
+
+    }
+
+
+    else if (
+      error.name ===
+      "NotFoundError"
+    ) {
+
+      message +=
+
+        "\n\nKamera tidak ditemukan.";
+
+    }
+
+
+    else if (
+      error.name ===
+      "NotReadableError"
+    ) {
+
+      message +=
+
+        "\n\nKamera sedang digunakan aplikasi lain.";
+
+    }
+
+
+    else if (
+      error.name ===
+      "SecurityError"
+    ) {
+
+      message +=
+
+        "\n\nBrowser memblokir akses kamera.";
+
+    }
+
+
+    status.className =
+      "status error";
+
+
+    status.textContent =
+      message;
+
+  }
+
+}
+
+
+/* ============================================================
+   FACE MODEL
+   ============================================================ */
+
+async function loadFaceModels() {
+
+  if (
+    faceModelsReady
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    setStatus(
+      "cameraStatus",
+      "Kamera aktif.\nMemuat sistem deteksi wajah..."
+    );
+
+
+    await faceapi.nets.tinyFaceDetector
+      .loadFromUri(
+        MODEL_URL
+      );
+
+
+    await faceapi.nets.faceLandmark68Net
+      .loadFromUri(
+        MODEL_URL
+      );
+
+
+    await faceapi.nets.faceRecognitionNet
+      .loadFromUri(
+        MODEL_URL
+      );
+
+
+    faceModelsReady =
+      true;
+
+
+    setStatus(
+      "cameraStatus",
+      "✓ Kamera dan sistem wajah siap.\nPastikan hanya satu wajah terlihat."
+    );
+
+
+    cekTombolAbsen();
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "FACE MODEL ERROR:",
+      error
+    );
+
+
+    setStatus(
+      "cameraStatus",
+      "❌ Model wajah gagal dimuat.\n" +
+      error.message,
+      true
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   GPS
+   ============================================================ */
+
+function cekGPS() {
+
+  setStatus(
+    "gpsStatus",
+    "Mengambil GPS..."
+  );
+
+
+  if (
+    !navigator.geolocation
+  ) {
+
+    setStatus(
+      "gpsStatus",
+      "Browser tidak mendukung GPS.",
+      true
+    );
+
+    return;
+
+  }
+
+
+  navigator
+    .geolocation
+    .getCurrentPosition(
+
+      function(position) {
+
+        latitude =
+          position.coords.latitude;
+
+
+        longitude =
+          position.coords.longitude;
+
+
+        const accuracy =
+          position.coords.accuracy;
+
+
+        setStatus(
+
+          "gpsStatus",
+
+          "✓ GPS berhasil\n" +
+
+          "Latitude: " +
+          latitude.toFixed(6) +
+
+          "\nLongitude: " +
+          longitude.toFixed(6) +
+
+          "\nAkurasi ±" +
+          Math.round(
+            accuracy
+          ) +
+          " meter",
+
+          false
+        );
+
+
+        cekTombolAbsen();
+
+      },
+
+
+      function(error) {
+
+        console.error(
+          "GPS ERROR:",
+          error
+        );
+
+
+        setStatus(
+
+          "gpsStatus",
+
+          "❌ GPS gagal.\n" +
+          error.message,
+
+          true
+        );
+
+      },
+
+
+      {
+
+        enableHighAccuracy:
+          true,
+
+        timeout:
+          15000,
+
+        maximumAge:
+          0
+
+      }
+
+    );
+
+}
+
+
+/* ============================================================
+   CEK TOMBOL ABSEN
+   ============================================================ */
+
+function cekTombolAbsen() {
+
+  const button =
+    document
+      .getElementById(
+        "btnAbsen"
+      );
+
+
+  button.disabled =
+    !(
+      cameraStream &&
+      faceModelsReady &&
+      latitude !== null &&
+      longitude !== null
+    );
+
+}
+
+
+/* ============================================================
+   AMBIL FOTO
+   ============================================================ */
+
+async function ambilFoto() {
+
+  if (!user) {
+
+    alert(
+      "Silakan login ulang."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !cameraStream
+  ) {
+
+    alert(
+      "Kamera belum aktif."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    latitude === null ||
+    longitude === null
+  ) {
+
+    alert(
+      "Silakan cek GPS terlebih dahulu."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !faceModelsReady
+  ) {
+
+    alert(
+      "Sistem wajah belum siap."
+    );
+
+    return;
+
+  }
+
+
+  const video =
+    document
+      .getElementById(
+        "video"
+      );
+
+
+  const button =
+    document
+      .getElementById(
+        "btnAbsen"
+      );
+
+
+  button.disabled =
+    true;
+
+
+  setStatus(
+    "absenStatus",
+    "Memeriksa wajah..."
+  );
+
+
+  try {
+
+    /*
+     * DETEKSI SEMUA WAJAH
+     */
+
+    const detections =
+      await faceapi
+
+        .detectAllFaces(
+          video,
+
+          new faceapi
+            .TinyFaceDetectorOptions({
+              inputSize: 416,
+              scoreThreshold: 0.5
+            })
+
+        )
+
+        .withFaceLandmarks()
+
+        .withFaceDescriptors();
+
+
+    const jumlahWajah =
+      detections.length;
+
+
+    console.log(
+      "Jumlah wajah:",
+      jumlahWajah
+    );
+
+
+    /*
+     * HARUS SATU WAJAH
+     */
+
+    if (
+      jumlahWajah === 0
+    ) {
+
+      throw new Error(
+        "Wajah tidak terdeteksi.\n" +
+        "Pastikan wajah terlihat jelas dan pencahayaan cukup."
+      );
+
+    }
+
+
+    if (
+      jumlahWajah > 1
+    ) {
+
+      throw new Error(
+        "ABSENSI DITOLAK.\n\n" +
+        "Foto hanya boleh berisi satu orang."
+      );
+
+    }
+
+
+    /*
+     * VERIFIKASI WAJAH
+     */
+
+    setStatus(
+      "absenStatus",
+      "Memverifikasi identitas wajah..."
+    );
+
+
+    const cocok =
+      await verifikasiWajah(
+        detections[0].descriptor,
+        user.faceFileId
+      );
+
+
+    if (
+      !cocok
+    ) {
+
+      throw new Error(
+        "Wajah tidak cocok dengan data karyawan."
+      );
+
+    }
+
+
+    /*
+     * BUAT FOTO DARI VIDEO
+     */
+
+    const canvas =
+      document
+        .createElement(
+          "canvas"
+        );
+
+
+    canvas.width =
+      video.videoWidth;
+
+
+    canvas.height =
+      video.videoHeight;
+
+
+    const ctx =
+      canvas.getContext(
+        "2d"
+      );
+
+
+    ctx.drawImage(
+      video,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+
+    /*
+     * WATERMARK
+     */
+
+    const now =
+      new Date();
+
+
+    const waktu =
+      now.toLocaleString(
+        "id-ID"
+      );
+
+
+    const watermark =
+
+      user.nama +
+      "\n" +
+
+      waktu +
+      "\n" +
+
+      "GPS: " +
+
+      latitude.toFixed(6) +
+      ", " +
+
+      longitude.toFixed(6);
+
+
+    ctx.font =
+      "bold 22px Arial";
+
+
+    ctx.lineWidth =
+      4;
+
+
+    ctx.strokeStyle =
+      "black";
+
+
+    ctx.fillStyle =
+      "white";
+
+
+    const lines =
+      watermark.split(
+        "\n"
+      );
+
+
+    let y =
+      canvas.height -
+      80;
+
+
+    lines.forEach(
+      function(line) {
+
+        ctx.strokeText(
+          line,
+          20,
+          y
+        );
+
+
+        ctx.fillText(
+          line,
+          20,
+          y
+        );
+
+
+        y += 30;
+
+      }
+    );
+
+
+    /*
+     * BASE64 FOTO
+     */
+
+    const base64 =
+      canvas
+        .toDataURL(
+          "image/jpeg",
+          0.85
+        )
+        .split(",")[1];
+
+
+    /*
+     * KIRIM KE APPS SCRIPT
+     */
+
+    setStatus(
+      "absenStatus",
+      "Menyimpan absensi..."
+    );
+
+
+    const result =
+      await apiRequest(
+        "prosesAbsensi",
+        {
+
+          user:
+            user,
+
+          latitude:
+            latitude,
+
+          longitude:
+            longitude,
+
+          jumlahWajah:
+            jumlahWajah,
+
+          wajahTerverifikasi:
+            cocok,
+
+          photoBase64:
+            base64
+
+        }
+      );
+
+
+    let text =
+
+      "✅ ABSENSI BERHASIL\n\n" +
+
+      result.jenis +
+      "\n" +
+
+      result.tanggal +
+      " " +
+      result.waktu +
+      "\n\n" +
+
+      "📍 " +
+      result.lokasi +
+      "\n" +
+
+      "Jarak: " +
+      result.jarak +
+      " meter";
+
+
+    if (
+      result.jenis ===
+      "MASUK"
+    ) {
+
+      text +=
+
+        "\n\n⏰ " +
+        result.statusTelat;
+
+    }
+
+
+    if (
+      result.jenis ===
+      "PULANG"
+    ) {
+
+      text +=
+
+        "\n\n⏰ " +
+        result.statusPulang;
+
+    }
+
+
+    setStatus(
+      "absenStatus",
+      text,
+      false
+    );
+
+
+    loadDashboard();
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "ABSEN ERROR:",
+      error
+    );
+
+
+    setStatus(
+      "absenStatus",
+      "❌ " +
+      error.message,
+      true
+    );
+
+
+    cekTombolAbsen();
+
+  }
+
+}
+
+
+/* ============================================================
+   VERIFIKASI WAJAH
+   ============================================================ */
+
+async function verifikasiWajah(
+  liveDescriptor,
+  faceFileId
+) {
+
+  if (
+    !faceFileId
+  ) {
+
+    throw new Error(
+      "Foto referensi wajah belum terdaftar untuk karyawan ini."
+    );
+
+  }
+
+
+  /*
+   * Ambil foto referensi dari Apps Script
+   */
+
+  const reference =
+    await apiRequest(
+      "getFaceReference",
+      {
+        faceFileId:
+          faceFileId
+      }
+    );
+
+
+  if (
+    !reference ||
+    !reference.base64
+  ) {
+
+    throw new Error(
+      "Foto referensi wajah tidak tersedia."
+    );
+
+  }
+
+
+  const image =
+    await faceapi.fetchImage(
+
+      "data:" +
+      reference.mimeType +
+      ";base64," +
+      reference.base64
+
+    );
+
+
+  const detection =
+    await faceapi
+
+      .detectSingleFace(
+
+        image,
+
+        new faceapi
+          .TinyFaceDetectorOptions()
+
+      )
+
+      .withFaceLandmarks()
+
+      .withFaceDescriptor();
+
+
+  if (
+    !detection
+  ) {
+
+    throw new Error(
+      "Wajah pada foto referensi tidak dapat dibaca."
+    );
+
+  }
+
+
+  const distance =
+    faceapi.euclideanDistance(
+
+      liveDescriptor,
+
+      detection.descriptor
+
+    );
+
+
+  /*
+   * THRESHOLD
+   *
+   * 0.50 cukup ketat untuk tahap awal.
+   */
+
+  const THRESHOLD =
+    0.50;
+
+
+  console.log(
+    "Face distance:",
+    distance
+  );
+
+
+  return (
+    distance <=
+    THRESHOLD
+  );
+
+}
+
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+
+async function loadDashboard() {
+
+  if (
+    !user
+  ) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const data =
+      await apiRequest(
+        "getDashboard",
+        {
+          idKaryawan:
+            user.idKaryawan
+        }
+      );
+
+
+    renderRekap(
+      data.dataHariIni
+    );
+
+
+    if (
+      data.sudahMasuk &&
+      data.sudahPulang
+    ) {
+
+      document
+        .getElementById(
+          "btnAbsen"
+        )
+        .disabled =
+        true;
+
+
+      setStatus(
+        "absenStatus",
+        "Absensi hari ini sudah lengkap."
+      );
+
+    }
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "DASHBOARD ERROR:",
+      error
+    );
+
+  }
+
+}
+
+
+/* ============================================================
+   REKAP
+   ============================================================ */
+
+function renderRekap(
+  data
+) {
+
+  const el =
+    document
+      .getElementById(
+        "rekapHariIni"
+      );
+
+
+  if (
+    !data ||
+    data.length === 0
+  ) {
+
+    el.innerHTML =
+      "Belum ada absensi hari ini.";
+
+    return;
+
+  }
+
+
+  el.innerHTML =
+    data
+
+      .map(
+        function(item) {
+
+          return (
+
+            '<div class="row">' +
+
+            "<b>" +
+            escapeHtml(
+              item.jenis
+            ) +
+            "</b><br>" +
+
+            escapeHtml(
+              item.waktu
+            ) +
+            "<br>" +
+
+            "📍 " +
+            escapeHtml(
+              item.lokasi
+            ) +
+
+            (
+              item.statusTelat &&
+              item.statusTelat !== "-"
+                ?
+
+                "<br>⏰ " +
+                escapeHtml(
+                  item.statusTelat
+                )
+
+                :
+                ""
+            ) +
+
+            (
+              item.statusPulang &&
+              item.statusPulang !== "-"
+                ?
+
+                "<br>⏰ " +
+                escapeHtml(
+                  item.statusPulang
+                )
+
+                :
+                ""
+            ) +
+
+            "</div>"
+
+          );
+
+        }
+      )
+
+      .join("");
+
+}
+
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
+function logout() {
+
+  /*
+   * Matikan kamera
+   */
+
+  if (
+    cameraStream
+  ) {
+
+    cameraStream
+      .getTracks()
+      .forEach(
+        function(track) {
+
+          track.stop();
+
+        }
+      );
+
+    cameraStream =
+      null;
+
+  }
+
+
+  user =
+    null;
+
+  latitude =
+    null;
+
+  longitude =
+    null;
+
+  faceModelsReady =
+    false;
+
+
+  document
+    .getElementById(
+      "video"
+    )
+    .srcObject =
+    null;
+
+
+  document
+    .getElementById(
+      "dashboard"
+    )
+    .classList
+    .add("hidden");
+
+
+  document
+    .getElementById(
+      "loginCard"
+    )
+    .classList
+    .remove("hidden");
+
+
+  document
+    .getElementById(
+      "idKaryawan"
+    )
+    .value =
+    "";
+
+
+  document
+    .getElementById(
+      "pin"
+    )
+    .value =
+    "";
+
+
+  document
+    .getElementById(
+      "cameraStatus"
+    )
+    .textContent =
+    "Kamera belum aktif.";
+
+
+  document
+    .getElementById(
+      "btnCamera"
+    )
+    .textContent =
+    "📷 AKTIFKAN KAMERA";
+
+
+  document
+    .getElementById(
+      "btnCamera"
+    )
+    .disabled =
+    false;
+
+
+  document
+    .getElementById(
+      "btnAbsen"
+    )
+    .disabled =
+    true;
+
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+function setStatus(
+  id,
+  text,
+  error = false
+) {
+
+  const el =
+    document
+      .getElementById(
+        id
+      );
+
+
+  el.textContent =
+    text;
+
+
+  el.className =
+    "status " +
+    (
+      error
+        ? "error"
+        : ""
+    );
+
+}
+
+
+/* ============================================================
+   SECURITY
+   ============================================================ */
+
+function escapeHtml(
+  value
+) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+
+    return "";
+
+  }
+
+
+  return String(value)
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* ============================================================
+   PAGE CHECK
+   ============================================================ */
+
+console.log(
+  "Absensi Web App loaded."
+);
+
+
+console.log(
+  "Protocol:",
+  location.protocol
+);
+
+
+console.log(
+  "MediaDevices:",
+  navigator.mediaDevices
+);
+
+</script>
+
+</body>
+
+</html>
+```
