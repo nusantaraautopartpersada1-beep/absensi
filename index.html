@@ -1510,15 +1510,27 @@ async function verifikasiWajah(
   }
 
 
-  const image =
-    await faceapi.fetchImage(
+  let image;
 
-      "data:" +
-      reference.mimeType +
-      ";base64," +
-      reference.base64
+  try {
 
+    image =
+      await faceapi.fetchImage(
+        "data:" +
+        reference.mimeType +
+        ";base64," +
+        reference.base64
+      );
+
+  } catch (e) {
+
+    throw new Error(
+      "Foto referensi tidak bisa dibuka.\n" +
+      "Format: " + reference.mimeType + "\n" +
+      "Gunakan foto JPG atau PNG."
     );
+
+  }
 
 
   const detection =
