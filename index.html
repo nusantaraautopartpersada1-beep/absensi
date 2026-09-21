@@ -877,6 +877,11 @@ async function loadFaceModels() {
         MODEL_URL
       );
 
+    
+    await faceapi.nets.ssdMobilenetv1
+      .loadFromUri(
+        MODEL_URL
+      );
 
     faceModelsReady =
       true;
@@ -1541,9 +1546,8 @@ async function verifikasiWajah(
         image,
 
         new faceapi
-          .TinyFaceDetectorOptions({
-            inputSize: 608,
-            scoreThreshold: 0.1
+          .SsdMobilenetv1Options({
+            minConfidence: 0.3
           })
 
       )
