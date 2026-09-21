@@ -1541,7 +1541,10 @@ async function verifikasiWajah(
         image,
 
         new faceapi
-          .TinyFaceDetectorOptions()
+          .TinyFaceDetectorOptions({
+            inputSize: 608,
+            scoreThreshold: 0.1
+          })
 
       )
 
